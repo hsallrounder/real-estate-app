@@ -7,6 +7,8 @@ const userSchema = new mongoose.Schema({
   phoneNumber: String,
   password: String,
   role: { type: String, enum: ['buyer', 'seller'] },
+  liked_properties: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Property' }], // Added for buyers
+  rental_properties: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Property' }] // Added for sellers
 });
 
 // Ensure indexes are created

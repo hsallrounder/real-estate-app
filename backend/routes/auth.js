@@ -29,17 +29,21 @@ router.post('/register', async (req, res) => {
 
 // Login user
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
 
   try {
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).send('Invalid email or password');
     }
+    
+    if(role!=user.role){
+      return res.status(401).send('Invalid role');
+    }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).send('Invalid email or password');
+      return res.status(401).send('Invalid hai email or password');
     }
 
     const token = jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
