@@ -9,6 +9,7 @@ const Property = require('./models/Property');
 const { ObjectId } = require('mongodb');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
+require('dotenv').config();
 
 const PORT = process.env.PORT || 8080
 const DB_URI = process.env.DB_URI || 'mongodb://127.0.0.1:27017/Rentify_DB'
@@ -101,7 +102,7 @@ app.post('/signup', async (req, res) => {
         res.redirect('/login');
     } catch (err) {
         console.error(err);
-        // res.status(500).send('Error creating user');
+        res.status(500).send('Error creating user');
     }
 });
 
@@ -291,8 +292,8 @@ app.get('/logout', function (req, res, next) {
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'hsharma4work@gmail.com',
-        pass: 'rkrp zivs igje kxkr' // or use an app-specific password if 2FA is enabled
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
     }
 });
 
