@@ -292,7 +292,7 @@ const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'hsharma4work@gmail.com',
-        pass: 'Hmarapassword@1' // or use an app-specific password if 2FA is enabled
+        pass: 'rkrp zivs igje kxkr' // or use an app-specific password if 2FA is enabled
     }
 });
 
@@ -321,40 +321,43 @@ const buyerEmailContent = (propertyAreaName, propertyPlotSize, propertyBedrooms,
 `;
 
 
-app.post('/send-email', async (req, res) => {
-    const { property } = req.body;
-    const sellerDetails = await User.findOne({ 'email': property.seller_id });
-
+app.post('/send-email/:propertyId', async (req, res) => {
+    
     const buyerDetails = await User.findOne({ 'email': req.session.email });
+    
+    const _id = new ObjectId(req.params.propertyId);
+    const propertyDetails = await Property.findById(_id);
+    
+    const sellerDetails = await User.findOne({ 'email': propertyDetails.seller_id });
 
     // Generate email body for seller
     const sellerBody = sellerEmailContent(
-        buyerDetails['firstName'],
-        buyerDetails['lastName'],
-        buyerDetails['email'],
-        buyerDetails['phone']
+        buyerDetails.firstName,
+        buyerDetails.lastName,
+        buyerDetails.email,
+        buyerDetails.phone
     );
 
     // Generate email body for buyer
     const buyerBody = buyerEmailContent(
-        populatedProperty.areaName,
-        populatedProperty.plotSize,
-        populatedProperty.bedrooms,
-        populatedProperty.bathrooms,
-        sellerDetails['firstName'], // Seller's first name
-        sellerDetails['lastName'],
-        sellerDetails['email'],     // Seller's email
-        sellerDetails['phone']      // Seller's phone
+        propertyDetails.areaName,
+        propertyDetails.plotSize,
+        propertyDetails.bedrooms,
+        propertyDetails.bathrooms,
+        sellerDetails.firstName, // Seller's first name
+        sellerDetails.lastName,
+        sellerDetails.email,     // Seller's email
+        sellerDetails.phone      // Seller's phone
     );
 
-    const sellerSubject = `Interest in Your Property - ${property.areaName}`;
+    const sellerSubject = `Interest in Your Property - ${propertyDetails.areaName}`;
 
     // Subject for buyer's email
-    const buyerSubject = `Details of Property - ${property.areaName}`;
+    const buyerSubject = `Details of Property - ${propertyDetails.areaName}`;
 
     // Send email to seller
     const sellerMailOptions = {
-        from: 'hsharma4work@gmail.com',
+        from: 'RentifyByHS@gmail.com',
         to: sellerDetails.email,
         subject: sellerSubject,
         html: sellerBody
@@ -362,7 +365,7 @@ app.post('/send-email', async (req, res) => {
 
     // Send email to buyer
     const buyerMailOptions = {
-        from: 'hsharma4work@gmail.com',
+        from: 'RentifyByHS@gmail.com',
         to: buyerDetails.email,
         subject: buyerSubject,
         html: buyerBody
