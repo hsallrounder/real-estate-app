@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/SignUp.css">
+  <title>SignUp</title>
+  <style>
+    /* Base styles */
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header,
+    main {
+      flex: 1;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    p {
+      text-align: center;
+      margin-top: 0;
+    }
+
+    .err_msg {
+      text-align: left;
+      color: red;
+      margin-bottom: 0;
+      font-size: 12px;
+      padding: 0;
+    }
+
+    /* Centered form with decent width */
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 400px;
+      /* Set form width */
+      margin: 0 auto;
+      /* Center form horizontally */
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    /* Input width set to 80% to avoid full page width */
+    input,
+    select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 80%;
+    }
+
+    .signup-btn {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .signup-btn:hover {
+      background-color: #3e8e41;
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    /* Responsive styles */
+    @media screen and (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      input,
+      select {
+        font-size: 0.9rem;
+      }
+
+      form {
+        width: calc(100% - 20px);
+        /* Set form width to 100% minus padding */
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Sign Up</h1>
+    <p>Create an account to buy or upload properties.</p>
+  </header>
+
+  <main>
+    <form action="/signup" method="post">
+      <label for="firstName">First Name:</label>
+      <input type="text" id="first-name" name="firstName" value="<%= fname %>" required>
+
+      <label for="lastName">Last Name:</label>
+      <input type="text" id="last-name" name="lastName" value="<%= lname %>" required>
+
+      <label for="email">Email:</label>
+      <p class="err_msg">
+        <%= email_err %>
+      </p>
+      <input type="email" id="email" name="email" value="<%= email %>" required>
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" value="<%= password %>" required>
+
+      <label for="phone">Phone Number:</label>
+      <input type="tel" id="phone" name="phone" value="<%= phone %>" required>
+
+      <label for="type">Type:</label>
+      <select id="type" name="type" required>
+        <option value="buyer" <% if (type==='buyer') { %>selected<% } %>>Buyer</option>
+        <option value="seller" <% if (type==='seller') { %>selected<% } %>>Seller</option>
+      </select>
+
+
+      <button type="submit" class="signup-btn">Sign Up</button>
+    </form>
+
+    <p class="login-link">Already have an account? <a href="/login">Login here</a>.</p>
+  </main>
+</body>
+
+</html>
