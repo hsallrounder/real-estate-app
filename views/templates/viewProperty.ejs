@@ -50,16 +50,19 @@
             margin-bottom: 5px;
         }
 
-        .add-btn {
+        .btns {
             background-color: #4CAF50;
             color: white;
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
         }
 
-        .add-btn:hover {
+        .btns:hover {
             background-color: #3e8e41;
         }
 
@@ -96,6 +99,7 @@
 
 <body>
     <h1>Available Properties</h1>
+    <button onclick="logout()" class=" btns lg-btn">Logout</button>
     <% if (properties.length===0) { %>
         <p>No properties found.</p>
         <% } else { %>
@@ -132,6 +136,9 @@
                                     style="color: black;"></i>
                                 <%= property.dislikes.length %>
                             </span>
+                            <span style="padding: 10px; border: 2px solid black; border-radius: 3px; cursor: pointer;">
+                                <a onclick="sendEmail('<%= property %>')">I'm Interested.</a>
+                            </span>
                         </div>
 
                     </div>
@@ -153,6 +160,15 @@
                         });
                         window.location.reload()
 
+                    }
+                    function logout() {
+                        window.location.href = '/logout'
+                    }
+                    async function sendEmail(property){
+                        await fetch('/send-email',{
+                            method: 'POST'
+                        });
+                        alert("Thank You for showing interest. Kindly check your Email.");
                     }
                 </script>
 </body>

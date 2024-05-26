@@ -68,7 +68,6 @@
 </head>
 <body>
   <h2>Edit Property Details</h2>
-  <button onclick="logout()" class=" add-btn">Logout</button>
   <form action="/editProperties" method="post">
     <label for="areaName">Area Name:</label>
     <input type="text" id="areaName" name="areaName" value="<%= areaName %>" required>
@@ -97,10 +96,5 @@
 
     <button type="submit">Update Property</button>
   </form>
-  <script>
-    function logout() {
-      window.location.href = '/logout'
-    }
-  </script>
 </body>
 </html>

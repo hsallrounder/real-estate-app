@@ -50,7 +50,7 @@
       margin-bottom: 5px;
     }
 
-    .add-btn {
+    .btns {
       background-color: #4CAF50;
       color: white;
       padding: 10px 20px;
@@ -62,7 +62,7 @@
       display: block;
     }
 
-    .add-btn:hover {
+    .btns:hover {
       background-color: #3e8e41;
     }
 
@@ -99,8 +99,8 @@
 
 <body>
   <h1>Your Properties</h1>
-  <button onclick="redirectToAddProperties()" class=" add-btn">Add Properties</button>
-  <button onclick="logout()" class=" add-btn">Logout</button>
+  <button onclick="redirectToAddProperties()" class=" btns add-btn">Add Properties</button>
+  <button onclick="logout()" class=" btns lg-btn">Logout</button>
   <% if (properties.length===0) { %>
     <p>No properties found.</p>
     <% } else { %>

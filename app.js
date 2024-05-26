@@ -7,6 +7,8 @@ const session = require('express-session');
 const User = require('./models/User');
 const Property = require('./models/Property');
 const { ObjectId } = require('mongodb');
+const nodemailer = require('nodemailer');
+const bodyParser = require('body-parser');
 
 const PORT = process.env.PORT || 8080
 const DB_URI = process.env.DB_URI || 'mongodb://127.0.0.1:27017/Rentify_DB'
@@ -26,8 +28,7 @@ app.use(session({
     resave: false,
     saveUninitialized: true
 }))
-
-
+app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
     res.render('HomePage');
@@ -205,7 +206,7 @@ app.get('/deleteProperty', isAuthenticated, async (req, res) => {
 });
 
 app.post('/properties/:propertyId/like', async (req, res) => {
-    const email = req.session.email; 
+    const email = req.session.email;
 
     if (!email) {
         return res.status(400).json({ message: 'Missing user ID' });
@@ -241,7 +242,7 @@ app.post('/properties/:propertyId/like', async (req, res) => {
 });
 
 app.post('/properties/:propertyId/dislike', async (req, res) => {
-    const email  = req.session.email // Assuming user ID is sent in the request body
+    const email = req.session.email // Assuming user ID is sent in the request body
 
     if (!email) {
         return res.status(400).json({ message: 'Missing user ID' });
@@ -285,6 +286,99 @@ app.get('/logout', function (req, res, next) {
         })
     })
 })
+
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'hsharma4work@gmail.com',
+        pass: 'Hmarapassword@1' // or use an app-specific password if 2FA is enabled
+    }
+});
+
+const sellerEmailContent = (buyerFirstName, buyerLastName, buyerEmail, buyerPhone) => `
+    <p>Hello,</p>
+    <p>You have received an expression of interest in your property. Below are the details of the interested buyer:</p>
+    <p>First Name: ${buyerFirstName}</p>
+    <p>Last Name: ${buyerLastName}</p>
+    <p>Email: ${buyerEmail}</p>
+    <p>Phone: ${buyerPhone}</p>
+    <p>Thank you.</p>
+`;
+
+const buyerEmailContent = (propertyAreaName, propertyPlotSize, propertyBedrooms, propertyBathrooms, sellerFName, sellerLName, sellerEmail, sellerPhone) => `
+    <p>Hello,</p>
+    <p>Thank you for showing interest in the property. Below are the details of the property and its seller:</p>
+    <p>Area Name: ${propertyAreaName}</p>
+    <p>Plot Size: ${propertyPlotSize} sq ft</p>
+    <p>Bedrooms: ${propertyBedrooms}</p>
+    <p>Bathrooms: ${propertyBathrooms}</p>
+    <p>Seller's First Name: ${sellerFName}</p>
+    <p>Seller's Last Name: ${sellerLName}</p>
+    <p>Seller's Email: ${sellerEmail}</p>
+    <p>Seller's Phone: ${sellerPhone}</p>
+    <p>Thank you.</p>
+`;
+
+
+app.post('/send-email', async (req, res) => {
+    const { property } = req.body;
+    const sellerDetails = await User.findOne({ 'email': property.seller_id });
+
+    const buyerDetails = await User.findOne({ 'email': req.session.email });
+
+    // Generate email body for seller
+    const sellerBody = sellerEmailContent(
+        buyerDetails['firstName'],
+        buyerDetails['lastName'],
+        buyerDetails['email'],
+        buyerDetails['phone']
+    );
+
+    // Generate email body for buyer
+    const buyerBody = buyerEmailContent(
+        populatedProperty.areaName,
+        populatedProperty.plotSize,
+        populatedProperty.bedrooms,
+        populatedProperty.bathrooms,
+        sellerDetails['firstName'], // Seller's first name
+        sellerDetails['lastName'],
+        sellerDetails['email'],     // Seller's email
+        sellerDetails['phone']      // Seller's phone
+    );
+
+    const sellerSubject = `Interest in Your Property - ${property.areaName}`;
+
+    // Subject for buyer's email
+    const buyerSubject = `Details of Property - ${property.areaName}`;
+
+    // Send email to seller
+    const sellerMailOptions = {
+        from: 'hsharma4work@gmail.com',
+        to: sellerDetails.email,
+        subject: sellerSubject,
+        html: sellerBody
+    };
+
+    // Send email to buyer
+    const buyerMailOptions = {
+        from: 'hsharma4work@gmail.com',
+        to: buyerDetails.email,
+        subject: buyerSubject,
+        html: buyerBody
+    };
+
+    try {
+        // Send emails
+        await transporter.sendMail(sellerMailOptions);
+        await transporter.sendMail(buyerMailOptions);
+
+        res.status(200).send('Emails sent successfully');
+    } catch (error) {
+        console.error('Error sending emails:', error);
+        res.status(500).send(error.toString());
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`Server running on PORT : ${PORT}`)
