@@ -6,6 +6,7 @@ const mongoose = require('mongoose')
 const session = require('express-session');
 const User = require('./models/User');
 const Property = require('./models/Property');
+const { ObjectId } = require('mongodb');
 
 const PORT = process.env.PORT || 8080
 const DB_URI = process.env.DB_URI || 'mongodb://127.0.0.1:27017/Rentify_DB'
@@ -40,12 +41,39 @@ function isAuthenticated(req, res, next) {
     };
 }
 
-app.get('/signup', (req, res) => {
-    res.render('auth/SignUp', { email_err: '', fname: '', lname: '', email: '', password: '', phone: '', type: '' });
+app.get('/signup', async (req, res) => {
+    if (req.session.email) {
+        const user = await User.findOne({ 'email': req.session.email });
+        if (user['type'] == 'seller') {
+            res.redirect('/sellerProperties');
+        } else {
+            res.redirect('/viewProperties');
+        }
+    }
+    else res.render('auth/SignUp', { email_err: '', fname: '', lname: '', email: '', password: '', phone: '', type: '' });
 })
 
-app.get('/login', (req, res) => {
-    res.render('auth/login', { err: '', email: '', password: ''});
+app.get('/login', async (req, res) => {
+    if (req.session.email) {
+        const user = await User.findOne({ 'email': req.session.email });
+        if (user['type'] == 'seller') {
+            res.redirect('/sellerProperties');
+        } else {
+            res.redirect('/viewProperties');
+        }
+    }
+    else res.render('auth/login', { err: '', email: '', password: '' });
+})
+
+
+app.get('/viewProperties', isAuthenticated, async (req, res) => {
+    try {
+        const properties = await Property.find();
+        res.render('templates/viewProperty.ejs', { properties });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal server error');
+    }
 })
 
 
@@ -100,16 +128,16 @@ app.post('/login', async (req, res) => {
                         })
                     })
                 }
-                else{
-                    res.render('auth/login', { err: 'Invalid email or password.', email: email, password: password});
+                else {
+                    res.render('auth/login', { err: 'Invalid email or password.', email: email, password: password });
                 }
             });
         } catch (err) {
             console.log(err);
         }
     }
-    else{
-        res.render('auth/login', { err: 'Invalid email or password.', email: email, password: password});
+    else {
+        res.render('auth/login', { err: 'Invalid email or password.', email: email, password: password });
     }
 })
 
@@ -120,7 +148,8 @@ app.get('/uploadProperties', isAuthenticated, (req, res) => {
 
 app.get('/sellerProperties', isAuthenticated, async (req, res) => {
     try {
-        const properties = await Property.find({});
+        const email = req.session.email;
+        const properties = await Property.find({ 'seller_id': email });
 
         res.render('templates/SellerProperties.ejs', { properties });
     } catch (err) {
@@ -131,6 +160,7 @@ app.get('/sellerProperties', isAuthenticated, async (req, res) => {
 app.post('/uploadProperties', async (req, res) => {
     try {
         const { areaName, plotSize, bedrooms, bathrooms, amenities } = req.body;
+
 
         // Validate data (optional, implement your own validation logic)
         if (!areaName || plotSize <= 0 || bedrooms < 0 || bathrooms < 0) {
@@ -156,71 +186,88 @@ app.post('/uploadProperties', async (req, res) => {
     }
 });
 
-app.get('/editProperty' , isAuthenticated, async (req, res) => {
+app.get('/editProperty', isAuthenticated, async (req, res) => {
     const id = req.query.id;
-    const __id = mongoose.Types.ObjectId(id);
-    const property = await Property.findOne({__id});
-    
-    res.render('templates/EditProperty.ejs', { areaName: property.areaName, plotSize: property.plotSize, bedrooms:property.plotSize, bathrooms:property.bathrooms});
+    const __id = new ObjectId(id);
+    const property = await Property.find({ '_id': __id });
+    const checkHotel = property[0].amenities.includes('hotel');
+    const checkCollege = property[0].amenities.includes('college');
+    const checkHospital = property[0].amenities.includes('hospital');
+
+    res.render('templates/EditProperty.ejs', { areaName: property[0].areaName, plotSize: property[0].plotSize, bedrooms: property[0].plotSize, bathrooms: property[0].bathrooms, checkHotel, checkCollege, checkHospital });
 });
 
-app.post('/api/properties/:propertyId/like', async (req, res) => {
-    const { userId } = req.body; // Assuming user ID is sent in the request body
+app.get('/deleteProperty', isAuthenticated, async (req, res) => {
+    const id = req.query.id;
+    const __id = new ObjectId(id);
+    await Property.deleteOne({ '_id': __id });
+    res.redirect('/sellerProperties');
+});
 
-    if (!userId) {
+app.post('/properties/:propertyId/like', async (req, res) => {
+    const email = req.session.email; 
+
+    if (!email) {
         return res.status(400).json({ message: 'Missing user ID' });
     }
 
     try {
-        const property = await Property.findById(req.params.propertyId);
+        const _id = new ObjectId(req.params.propertyId);
+        const property = await Property.findById(_id);
 
         if (!property) {
             return res.status(404).json({ message: 'Property not found' });
         }
 
         // Check if user already liked the property
-        if (property.likes.includes(userId)) {
+        if (property.likes.includes(email)) {
             return res.status(400).json({ message: 'You already liked this property' });
         }
 
         // Update likes array and save the property
-        property.likes.push(userId);
+        property.likes.push(email);
+
+
+        if (property.dislikes.includes(email)) {
+            property.dislikes = property.likes.filter(id => id !== email);
+        }
         await property.save();
 
-        res.status(200).json({ message: 'Liked property successfully' });
+        res.redirect('/viewProperties');
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-app.post('/api/properties/:propertyId/dislike', async (req, res) => {
-    const { userId } = req.body; // Assuming user ID is sent in the request body
+app.post('/properties/:propertyId/dislike', async (req, res) => {
+    const email  = req.session.email // Assuming user ID is sent in the request body
 
-    if (!userId) {
+    if (!email) {
         return res.status(400).json({ message: 'Missing user ID' });
     }
 
     try {
-        const property = await Property.findById(req.params.propertyId);
+        const _id = new ObjectId(req.params.propertyId);
+        const property = await Property.findById(_id);
 
         if (!property) {
             return res.status(404).json({ message: 'Property not found' });
         }
 
         // Check if user already disliked the property
-        if (property.dislikes.includes(userId)) {
+        if (property.dislikes.includes(email)) {
             return res.status(400).json({ message: 'You already disliked this property' });
         }
 
         // Update dislikes array and save the property
-        property.dislikes.push(userId);
-        if (property.likes.includes(userId)) {
-            property.likes.splice(property.likes.findIndex(userId), 1);
+        property.dislikes.push(email);
+        if (property.likes.includes(email)) {
+            property.likes = property.likes.filter(id => id !== email);
         }
         await property.save();
 
-        res.status(200).json({ message: 'Disliked property successfully' });
+        res.redirect('/viewProperties');
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Internal server error' });

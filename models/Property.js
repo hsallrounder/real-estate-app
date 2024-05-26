@@ -29,11 +29,11 @@ const propertySchema = new mongoose.Schema({
   },
   // Like and Dislike information
   likes: {
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Array of user IDs who liked
+    type: [String], // Array of user IDs who liked
     default: []
   },
   dislikes: {
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Array of user IDs who disliked
+    type: [String], // Array of user IDs who disliked
     default: []
   },
   // You can add additional property details here

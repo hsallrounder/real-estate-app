@@ -69,7 +69,7 @@
 <body>
   <h2>Upload Property Details</h2>
 
-  <form action="/upload-property" method="post">
+  <form action="/uploadProperties" method="post">
     <label for="areaName">Area Name:</label>
     <input type="text" id="areaName" name="areaName" required>
 
@@ -85,13 +85,13 @@
     <h3>Amenities (Select all that apply):</h3>
     <div class="amenities">
       <label for="hotel">Hotel Nearby:</label>
-      <input type="checkbox" id="hotel" name="amenities[]" value="hotel">
+      <input type="checkbox" id="hotel" name="amenities" value="hotel">
 
       <label for="college">College Nearby:</label>
-      <input type="checkbox" id="college" name="amenities[]" value="college">
+      <input type="checkbox" id="college" name="amenities" value="college">
 
       <label for="hospital">Hospital Nearby:</label>
-      <input type="checkbox" id="hospital" name="amenities[]" value="hospital">
+      <input type="checkbox" id="hospital" name="amenities" value="hospital">
 
       </div>
 

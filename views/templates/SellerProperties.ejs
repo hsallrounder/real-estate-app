@@ -57,6 +57,9 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      margin-left: auto;
+      margin-right: auto;
+      display: block;
     }
 
     .add-btn:hover {
@@ -97,6 +100,7 @@
 <body>
   <h1>Your Properties</h1>
   <button onclick="redirectToAddProperties()" class=" add-btn">Add Properties</button>
+  <button onclick="logout()" class=" add-btn">Logout</button>
   <% if (properties.length===0) { %>
     <p>No properties found.</p>
     <% } else { %>
@@ -111,6 +115,10 @@
             <p>Bathrooms: <%= property.bathrooms %>
             </p>
             <ul class="amenities">
+              <% if (property.amenities.length) { %>
+                <h4>Amenities</h4>
+              <% } %>
+            
               <% for (const amenity of property.amenities) { %>
                 <li>
                   <%= amenity %>
@@ -132,7 +140,7 @@
                 <a href="/editProperty?id=<%= property._id %>"><i class="fa-solid fa-pen-to-square"></i></a>
             </span>
             <span style="padding: 5px; margin: 2px;">
-              <i class="fa-solid fa-trash" style="color: rgb(241, 42, 42);"></i>
+              <a href="/deleteProperty?id=<%= property._id %>"><i class="fa-solid fa-trash" style="color: rgb(241, 42, 42);"></i></a>
             </span>
           </div>
           <% } %>
@@ -141,6 +149,9 @@
         <script>
           function redirectToAddProperties() {
             window.location.href = '/uploadProperties'; // Change to your target route
+          }
+          function logout() {
+            window.location.href = '/logout';
           }
         </script>
 </body>

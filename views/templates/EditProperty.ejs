@@ -68,8 +68,8 @@
 </head>
 <body>
   <h2>Edit Property Details</h2>
-
-  <form action="/upload-property" method="post">
+  <button onclick="logout()" class=" add-btn">Logout</button>
+  <form action="/editProperties" method="post">
     <label for="areaName">Area Name:</label>
     <input type="text" id="areaName" name="areaName" value="<%= areaName %>" required>
 
@@ -85,17 +85,22 @@
     <h3>Amenities (Select all that apply):</h3>
     <div class="amenities">
       <label for="hotel">Hotel Nearby:</label>
-      <input type="checkbox" id="hotel" name="amenities[]" value="hotel">
+      <input type="checkbox" id="hotel" name="amenities" value="hotel" checked="<%= checkHotel %>">
 
       <label for="college">College Nearby:</label>
-      <input type="checkbox" id="college" name="amenities[]" value="college">
+      <input type="checkbox" id="college" name="amenities" value="college" checked="<%= checkCollege %>">
 
       <label for="hospital">Hospital Nearby:</label>
-      <input type="checkbox" id="hospital" name="amenities[]" value="hospital">
+      <input type="checkbox" id="hospital" name="amenities" value="hospital"  checked="<%= checkHospital %>">
 
       </div>
 
     <button type="submit">Update Property</button>
   </form>
+  <script>
+    function logout() {
+      window.location.href = '/logout'
+    }
+  </script>
 </body>
 </html>
