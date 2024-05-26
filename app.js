@@ -64,7 +64,7 @@ app.get('/login', async (req, res) => {
             res.redirect('/viewProperties');
         }
     }
-    else res.render('auth/login', { err: '', email: '', password: '' });
+    else res.render('auth/Login', { err: '', email: '', password: '' });
 })
 
 
@@ -131,7 +131,7 @@ app.post('/login', async (req, res) => {
                     })
                 }
                 else {
-                    res.render('auth/login', { err: 'Invalid email or password.', email: email, password: password });
+                    res.render('auth/Login', { err: 'Invalid email or password.', email: email, password: password });
                 }
             });
         } catch (err) {
@@ -139,7 +139,7 @@ app.post('/login', async (req, res) => {
         }
     }
     else {
-        res.render('auth/login', { err: 'Invalid email or password.', email: email, password: password });
+        res.render('auth/Login', { err: 'Invalid email or password.', email: email, password: password });
     }
 })
 
